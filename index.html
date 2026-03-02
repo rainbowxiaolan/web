@@ -1,18 +1,983 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <!-- 页面编码，避免乱码 -->
-    <meta charset="UTF-8">
-    <!-- 适配手机端，可选但更规范 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 页面标题，随便写即可 -->
-    <title>喵喵喵</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>小蓝 · Sci-Fi Portfolio</title>
+  <meta name="description" content="小蓝的科幻风个人网站：项目、文章、技能与联系入口。" />
+  <meta name="theme-color" content="#05060a" />
+  <style>
+    /* =========================
+       Sci-Fi Design System
+    ========================== */
+    :root{
+      --bg0:#05060a;
+      --bg1:#070a12;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.10);
+      --stroke:rgba(255,255,255,.12);
+      --text:rgba(255,255,255,.88);
+      --muted:rgba(255,255,255,.62);
+      --hint:rgba(255,255,255,.45);
+
+      --c1:#7C3AED; /* purple */
+      --c2:#22D3EE; /* cyan */
+      --c3:#34D399; /* green */
+      --c4:#F472B6; /* pink */
+
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 10%, rgba(34,211,238,.16), transparent 55%),
+        radial-gradient(900px 600px at 80% 0%, rgba(124,58,237,.16), transparent 60%),
+        radial-gradient(1000px 800px at 60% 110%, rgba(244,114,182,.10), transparent 55%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    /* Ambient layers */
+    .stars, .grid, .glow {
+      position:fixed; inset:0; pointer-events:none; z-index:-2;
+    }
+    .stars { z-index:-3; }
+    .grid  { z-index:-2; opacity:.35; }
+    .glow  { z-index:-1; opacity:.85; mix-blend-mode:screen; }
+
+    /* Top nav */
+    .nav{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(180deg, rgba(5,6,10,.72), rgba(5,6,10,.35));
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .nav-inner{
+      max-width:1100px; margin:0 auto;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:14px 18px;
+      gap:14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px;
+      text-decoration:none; color:var(--text);
+      min-width: 220px;
+    }
+    .logo{
+      width:36px; height:36px; border-radius:12px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(34,211,238,.85), transparent 55%),
+        radial-gradient(circle at 70% 70%, rgba(124,58,237,.85), transparent 60%),
+        rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.14);
+      box-shadow: 0 0 40px rgba(34,211,238,.10);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-30%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      transform: rotate(25deg);
+      animation: sweep 3.8s linear infinite;
+    }
+    @keyframes sweep{
+      from{ transform: translateX(-35%) rotate(25deg); }
+      to{ transform: translateX(35%) rotate(25deg); }
+    }
+    .brand .t{
+      display:flex; flex-direction:column; line-height:1.1;
+    }
+    .brand .name{ font-weight:700; letter-spacing:.4px; }
+    .brand .tag { font-family:var(--mono); font-size:12px; color:var(--muted); }
+
+    .nav-links{
+      display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:9px 12px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      text-decoration:none;
+      font-size:14px;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease;
+      user-select:none;
+    }
+    .chip:hover{
+      transform: translateY(-1px);
+      color:var(--text);
+      border-color: rgba(34,211,238,.35);
+      background: rgba(34,211,238,.06);
+    }
+    .chip.primary{
+      color: rgba(255,255,255,.92);
+      border-color: rgba(34,211,238,.45);
+      background: linear-gradient(90deg, rgba(34,211,238,.12), rgba(124,58,237,.12));
+    }
+
+    .container{ max-width:1100px; margin:0 auto; padding: 0 18px 80px; }
+
+    /* Hero */
+    .hero{
+      padding: 56px 0 22px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 22px;
+      align-items:stretch;
+    }
+    @media (max-width: 980px){
+      .hero{ grid-template-columns:1fr; padding-top:36px; }
+      .brand{ min-width: auto; }
+    }
+    .card{
+      border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .card:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background: radial-gradient(800px 260px at 20% 0%, rgba(34,211,238,.18), transparent 55%),
+                  radial-gradient(900px 300px at 80% 10%, rgba(124,58,237,.16), transparent 60%);
+      opacity:.65;
+      pointer-events:none;
+    }
+    .hero-left{ padding: 26px 26px 20px; }
+    .kicker{
+      font-family:var(--mono);
+      color: rgba(34,211,238,.85);
+      font-size: 13px;
+      letter-spacing: .6px;
+      text-transform: uppercase;
+      display:flex; align-items:center; gap:10px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:99px;
+      background: rgba(34,211,238,.95);
+      box-shadow: 0 0 22px rgba(34,211,238,.6);
+    }
+    h1{
+      margin: 14px 0 10px;
+      font-size: 44px;
+      letter-spacing: .2px;
+      line-height:1.08;
+    }
+    @media (max-width: 480px){
+      h1{ font-size: 36px; }
+    }
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.7;
+      max-width: 62ch;
+    }
+    .typing{
+      font-family: var(--mono);
+      color: rgba(255,255,255,.88);
+      display:inline-block;
+      border-bottom: 1px dashed rgba(255,255,255,.18);
+      padding-bottom: 2px;
+    }
+    .cta-row{
+      display:flex; gap:12px; flex-wrap:wrap;
+      margin-top: 18px;
+      align-items:center;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding: 11px 14px;
+      border-radius: 14px;
+      text-decoration:none;
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      background: rgba(255,255,255,.04);
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      font-size:14px;
+      user-select:none;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(124,58,237,.35);
+      background: rgba(124,58,237,.06);
+    }
+    .btn.primary{
+      border-color: rgba(34,211,238,.50);
+      background: linear-gradient(90deg, rgba(34,211,238,.16), rgba(124,58,237,.14));
+    }
+    .btn small{ color: var(--muted); font-family:var(--mono); font-size: 12px; }
+
+    .hero-right{
+      padding: 18px;
+      display:flex;
+      flex-direction:column;
+      gap: 12px;
+    }
+
+    .mini{
+      padding: 14px 14px 12px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      position:relative;
+      overflow:hidden;
+    }
+    .mini h3{
+      margin:0 0 8px;
+      font-size: 14px;
+      font-family: var(--mono);
+      letter-spacing:.3px;
+      color: rgba(255,255,255,.85);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .mini p{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.7;
+    }
+    .pill{
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(34,211,238,.9);
+      background: rgba(34,211,238,.06);
+    }
+
+    /* Sections */
+    .section{
+      margin-top: 18px;
+      padding: 18px;
+    }
+    .section-head{
+      display:flex; align-items:flex-end; justify-content:space-between;
+      gap: 14px; flex-wrap:wrap;
+      margin-bottom: 14px;
+    }
+    .section-title{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:.3px;
+    }
+    .section-desc{
+      margin:0;
+      color: var(--hint);
+      font-size: 13px;
+      font-family: var(--mono);
+    }
+
+    .grid-3{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 980px){
+      .grid-3{ grid-template-columns: 1fr; }
+    }
+
+    .item{
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      position:relative;
+      overflow:hidden;
+      min-height: 120px;
+    }
+    .item:before{
+      content:"";
+      position:absolute; inset:-40%;
+      background: radial-gradient(circle at 30% 30%, rgba(34,211,238,.14), transparent 55%),
+                  radial-gradient(circle at 70% 60%, rgba(244,114,182,.10), transparent 60%);
+      opacity:.6;
+      pointer-events:none;
+    }
+    .item .top{
+      display:flex; align-items:flex-start; justify-content:space-between;
+      gap: 10px;
+      position:relative;
+    }
+    .item h4{
+      margin:0;
+      font-size: 15px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      font-family:var(--mono);
+      font-size: 11px;
+      color: var(--hint);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+    .item p{
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.75;
+      position:relative;
+    }
+    .item .links{
+      margin-top: 12px;
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      position:relative;
+    }
+    .a{
+      color: rgba(34,211,238,.9);
+      text-decoration:none;
+      font-family:var(--mono);
+      font-size: 12px;
+      border-bottom: 1px dashed rgba(34,211,238,.35);
+      padding-bottom: 1px;
+    }
+    .a:hover{ color: rgba(255,255,255,.92); border-bottom-color: rgba(255,255,255,.35); }
+
+    /* Timeline */
+    .timeline{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+    .node{
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+    }
+    .sig{
+      width: 12px; height: 12px; border-radius: 99px;
+      margin-top: 5px;
+      background: rgba(124,58,237,.9);
+      box-shadow: 0 0 18px rgba(124,58,237,.55);
+      flex: 0 0 auto;
+    }
+    .node h4{ margin:0; font-size: 14px; }
+    .node p{ margin:6px 0 0; color:var(--muted); font-size: 13px; line-height:1.7; }
+    .node .when{ font-family:var(--mono); font-size: 11px; color:var(--hint); margin-top: 6px; }
+
+    /* Contact */
+    .contact{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 980px){
+      .contact{ grid-template-columns: 1fr; }
+    }
+    .field{
+      display:flex; flex-direction:column; gap:8px;
+    }
+    label{
+      font-family:var(--mono);
+      font-size: 12px;
+      color: var(--hint);
+    }
+    input, textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.22);
+      color: var(--text);
+      outline:none;
+      font-size: 14px;
+    }
+    input:focus, textarea:focus{
+      border-color: rgba(34,211,238,.45);
+      box-shadow: 0 0 0 3px rgba(34,211,238,.10);
+    }
+    textarea{ min-height: 118px; resize: vertical; }
+    .note{
+      color: var(--hint);
+      font-size: 12px;
+      font-family: var(--mono);
+      margin-top: 8px;
+      line-height:1.6;
+    }
+
+    footer{
+      margin-top: 18px;
+      padding: 18px;
+      color: var(--hint);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-align:center;
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .logo:after{ animation:none; }
+    }
+
+    /* Skip link */
+    .skip{
+      position:absolute; left:-999px; top:-999px;
+      background:#000; color:#fff; padding:10px 12px; border-radius:10px;
+      z-index:999;
+    }
+    .skip:focus{ left:12px; top:12px; }
+  </style>
 </head>
+
 <body>
-    <!-- 核心内容，简单写一句话就行 -->
-    <h1 style="text-align: center; margin-top: 50px;">小蓝的个人网站</h1>
-    <!--
-    <p style="text-align: center;">用于微博开发者身份认证</p>
-    -->
+  <a class="skip" href="#main">跳到主要内容</a>
+
+  <!-- Ambient canvases -->
+  <canvas class="stars" id="stars" aria-hidden="true"></canvas>
+  <canvas class="grid" id="grid" aria-hidden="true"></canvas>
+  <canvas class="glow" id="glow" aria-hidden="true"></canvas>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top">
+        <div class="logo" aria-hidden="true"></div>
+        <div class="t">
+          <div class="name">小蓝</div>
+          <div class="tag">/ research · build · explore /</div>
+        </div>
+      </a>
+
+      <nav class="nav-links" aria-label="站点导航">
+        <a class="chip" href="#about">关于</a>
+        <a class="chip" href="#projects">项目</a>
+        <a class="chip" href="#notes">笔记</a>
+        <a class="chip" href="#timeline">轨迹</a>
+        <a class="chip primary" href="#contact">联系</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <!-- HERO -->
+    <section class="hero" id="top">
+      <div class="card hero-left">
+        <div class="kicker"><span class="dot" aria-hidden="true"></span> SYSTEM ONLINE · PORTFOLIO NODE</div>
+        <h1>
+          我是小蓝，<br/>
+          <span class="typing" id="typing">在星尘里写代码</span>
+        </h1>
+        <p class="subtitle">
+          这里是我的个人基地：记录项目、学习路径、以及一些“把想法落地”的实验。
+          风格是科幻的，目标是务实的：让作品自己说话。
+        </p>
+
+        <div class="cta-row">
+          <a class="btn primary" href="#projects" title="查看项目">
+            <span>查看项目</span>
+            <small>→</small>
+          </a>
+          <a class="btn" href="#notes" title="读我的笔记">
+            <span>读笔记</span>
+            <small>↗</small>
+          </a>
+          <a class="btn" href="#contact" title="联系我">
+            <span>联系我</span>
+            <small>✶</small>
+          </a>
+        </div>
+      </div>
+
+      <aside class="card hero-right" aria-label="快速信息">
+        <div class="mini">
+          <h3>状态 <span class="pill" id="statusPill">ACTIVE</span></h3>
+          <p>当前关注：网络安全 / Web 应用 / NLP（中文情感分析方向）</p>
+        </div>
+        <div class="mini">
+          <h3>技能栈</h3>
+          <p>Python · Web · Linux · 数据处理 · API 集成 · 基础安全</p>
+        </div>
+        <div class="mini">
+          <h3>坐标</h3>
+          <p>SGT (UTC+8) · 异步友好 · 喜欢可验证的结论</p>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="card section" id="about">
+      <div class="section-head">
+        <h2 class="section-title">关于我</h2>
+        <p class="section-desc">IDENTITY / MOTIVATION / METHOD</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="item">
+          <div class="top">
+            <h4>我在做什么</h4>
+            <span class="meta">NOW</span>
+          </div>
+          <p>
+            把“想法”变成可运行的东西：小工具、可视化、爬虫/接口整合、模型实验、以及能写进作品集的项目。
+          </p>
+        </div>
+
+        <div class="item">
+          <div class="top">
+            <h4>我怎么做</h4>
+            <span class="meta">METHOD</span>
+          </div>
+          <p>
+            偏爱科学方法：提出假设 → 做最小实验 → 记录数据 → 复盘迭代。宁可慢一点，也不要自信胡说。
+          </p>
+        </div>
+
+        <div class="item">
+          <div class="top">
+            <h4>我想去哪里</h4>
+            <span class="meta">NEXT</span>
+          </div>
+          <p>
+            方向：网安与工程能力并行。目标：做出“真实可用”的系统，而不是只会堆概念。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="card section" id="projects">
+      <div class="section-head">
+        <h2 class="section-title">项目</h2>
+        <p class="section-desc">ARTIFACTS / DEMOS / SOURCE</p>
+      </div>
+
+      <div class="grid-3">
+        <article class="item">
+          <div class="top">
+            <h4>微博情感分析仪表盘</h4>
+            <span class="meta">WEB · NLP</span>
+          </div>
+          <p>
+            合规采集公开数据 → 清洗 → 情感判定（API/微调模型）→ 可视化。适合做毕业设计/作品集主项目。
+          </p>
+          <div class="links">
+            <a class="a" href="#" onclick="return fakeLink(event)">Demo ↗</a>
+            <a class="a" href="#" onclick="return fakeLink(event)">GitHub ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <div class="top">
+            <h4>安全学习实验室</h4>
+            <span class="meta">SEC · LAB</span>
+          </div>
+          <p>
+            用虚拟机搭靶场、写笔记、做复现：把“看懂”变成“能复现+能解释”。（内容可逐步补齐）
+          </p>
+          <div class="links">
+            <a class="a" href="#" onclick="return fakeLink(event)">笔记索引 ↗</a>
+            <a class="a" href="#" onclick="return fakeLink(event)">环境脚本 ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <div class="top">
+            <h4>个人效率系统</h4>
+            <span class="meta">TOOLS</span>
+          </div>
+          <p>
+            任务排序、复盘模板、学习计划生成器。目标：让“焦虑”变成“可执行的下一步”。
+          </p>
+          <div class="links">
+            <a class="a" href="#" onclick="return fakeLink(event)">模板下载 ↗</a>
+            <a class="a" href="#" onclick="return fakeLink(event)">使用说明 ↗</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="card section" id="notes">
+      <div class="section-head">
+        <h2 class="section-title">笔记</h2>
+        <p class="section-desc">LOGS / ESSAYS / HOW-TO</p>
+      </div>
+
+      <div class="timeline">
+        <div class="node">
+          <div class="sig" aria-hidden="true"></div>
+          <div>
+            <h4>如何从 0 到 1 搭一个可展示的 Web 项目</h4>
+            <p>从需求拆分、API 选择、数据流、部署到作品集表达方式，一次讲透。</p>
+            <div class="when">2026-03 · draft</div>
+          </div>
+        </div>
+        <div class="node">
+          <div class="sig" aria-hidden="true" style="background:rgba(34,211,238,.9); box-shadow:0 0 18px rgba(34,211,238,.55)"></div>
+          <div>
+            <h4>网络安全入门：别从“黑客电影”开始，从威胁模型开始</h4>
+            <p>用现实世界的攻击面和防御面，建立你的第一张安全地图。</p>
+            <div class="when">2026-03 · draft</div>
+          </div>
+        </div>
+        <div class="node">
+          <div class="sig" aria-hidden="true" style="background:rgba(52,211,153,.9); box-shadow:0 0 18px rgba(52,211,153,.45)"></div>
+          <div>
+            <h4>时间感知与焦虑：用“可测量”的进展打败虚空</h4>
+            <p>把抽象的压力拆成可执行的行为：输入、输出、反馈周期。</p>
+            <div class="when">2026-02 · published</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TIMELINE -->
+    <section class="card section" id="timeline">
+      <div class="section-head">
+        <h2 class="section-title">轨迹</h2>
+        <p class="section-desc">CHECKPOINTS / UPGRADES</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="item">
+          <div class="top">
+            <h4>Checkpoint A</h4>
+            <span class="meta">2026 Q1</span>
+          </div>
+          <p>完成一个可公开访问的作品集项目：有数据、有界面、有说明、有部署。</p>
+        </div>
+        <div class="item">
+          <div class="top">
+            <h4>Checkpoint B</h4>
+            <span class="meta">2026 Q2</span>
+          </div>
+          <p>产出 10 篇高质量技术笔记：每篇都能复现、可证明、可迁移。</p>
+        </div>
+        <div class="item">
+          <div class="top">
+            <h4>Checkpoint C</h4>
+            <span class="meta">2026 Q3</span>
+          </div>
+          <p>把安全学习做成“体系”：靶场、工具链、报告模板、复盘机制。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="card section" id="contact">
+      <div class="section-head">
+        <h2 class="section-title">联系</h2>
+        <p class="section-desc">OPEN A CHANNEL</p>
+      </div>
+
+      <div class="contact">
+        <div class="item">
+  <div class="top">
+    <h4>邮箱</h4>
+    <span class="meta">EMAIL</span>
+  </div>
+  <p>
+    直接发我邮件：<br/>
+    <a class="a" href="mailto:1096767290@qq.com">1096767290@qq.com ↗</a>
+  </p>
+</div>
+        </div>
+
+        <form class="item" onsubmit="return handleContact(event)">
+          <div class="top">
+            <h4>给我发消息</h4>
+            <span class="meta">LOCAL</span>
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="who">你的称呼</label>
+            <input id="who" name="who" placeholder="比如：某某同学" autocomplete="name" />
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label for="msg">消息内容</label>
+            <textarea id="msg" name="msg" placeholder="写点具体的：你想聊什么、需要我做什么、截止时间/限制条件是什么"></textarea>
+          </div>
+
+          <div class="cta-row" style="margin-top:12px">
+            <button class="btn primary" type="submit">生成邮件草稿</button>
+            <button class="btn" type="button" onclick="copyPublicEmail()">复制邮箱</button>
+          </div>
+
+          <div class="note" id="contactNote">
+            说明：这个表单不会真正发送网络请求（纯静态站也能用）。它会帮你生成一段可复制的邮件草稿。
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer class="card">
+      <div style="padding: 14px 16px;">
+        <div>© <span id="year"></span> 小蓝 · Built in the void, verified in reality.</div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    // ================
+    // Tiny interactions
+    // ================
+    const yearEl = document.getElementById("year");
+    yearEl.textContent = new Date().getFullYear();
+
+    function fakeLink(e){
+      e.preventDefault();
+      toast("这是占位链接：把 href=\"#\" 换成你的真实地址。");
+      return false;
+    }
+
+    // Typing loop (lightweight, no libraries)
+    const typingEl = document.getElementById("typing");
+    const phrases = [
+      "在星尘里写代码",
+      "把想法变成可运行的东西",
+      "用实验对抗自信胡说",
+      "在复杂世界里保持清醒"
+    ];
+    let pi = 0, ci = 0, deleting = false;
+
+    const prefersReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function tick(){
+      if (prefersReduced) return; // respect reduced motion
+      const current = phrases[pi];
+      if(!deleting){
+        ci++;
+        typingEl.textContent = current.slice(0, ci);
+        if(ci >= current.length){
+          deleting = true;
+          setTimeout(tick, 900);
+          return;
+        }
+      }else{
+        ci--;
+        typingEl.textContent = current.slice(0, ci);
+        if(ci <= 0){
+          deleting = false;
+          pi = (pi + 1) % phrases.length;
+        }
+      }
+      setTimeout(tick, deleting ? 30 : 55);
+    }
+    setTimeout(tick, 400);
+
+    // =========
+    // Toast UI
+    // =========
+    const toastEl = document.createElement("div");
+    toastEl.style.cssText = `
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      padding: 10px 12px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.38);
+      backdrop-filter: blur(14px);
+      color: rgba(255,255,255,.9);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 999;
+      max-width: min(520px, calc(100vw - 36px));
+      text-align:center;
+    `;
+    document.body.appendChild(toastEl);
+
+    let toastTimer = null;
+    function toast(text){
+      toastEl.textContent = text;
+      toastEl.style.opacity = "1";
+      toastEl.style.transform = "translateX(-50%) translateY(-2px)";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.style.opacity = "0";
+        toastEl.style.transform = "translateX(-50%) translateY(0px)";
+      }, 1600);
+    }
+
+    // =====================
+    // Contact form (local)
+    // =====================
+    const PUBLIC_EMAIL = "1096767290@qq.com"; // TODO: 改成你的邮箱
+
+    function copyPublicEmail(){
+      navigator.clipboard?.writeText(PUBLIC_EMAIL).then(
+        () => toast("邮箱已复制（把示例邮箱改成你的真实邮箱）"),
+        () => toast("复制失败：请手动复制邮箱")
+      );
+    }
+
+    function handleContact(e){
+      e.preventDefault();
+      const who = (document.getElementById("who").value || "你好").trim();
+      const msg = (document.getElementById("msg").value || "").trim();
+      const subject = encodeURIComponent("联系小蓝｜来自个人网站");
+      const body = encodeURIComponent(
+`收件人：${PUBLIC_EMAIL}
+
+${who}，
+
+${msg || "（在这里写下你想说的内容）"}
+
+——
+来自：小蓝的个人网站`
+      );
+
+      // Generate a mailto draft (works offline)
+      const link = `mailto:${PUBLIC_EMAIL}?subject=${subject}&body=${body}`;
+      window.location.href = link;
+
+      const note = document.getElementById("contactNote");
+      note.textContent = "已生成邮件草稿（mailTo）。如果没弹出邮箱客户端，把 PUBLIC_EMAIL 改成你的真实邮箱即可。";
+      return false;
+    }
+
+    // ==========================
+    // Background canvases: stars + grid + glow
+    // ==========================
+    const cStars = document.getElementById("stars");
+    const cGrid  = document.getElementById("grid");
+    const cGlow  = document.getElementById("glow");
+
+    function resizeCanvas(c){
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      c.width = Math.floor(window.innerWidth * dpr);
+      c.height = Math.floor(window.innerHeight * dpr);
+      c.style.width = window.innerWidth + "px";
+      c.style.height = window.innerHeight + "px";
+      return dpr;
+    }
+
+    let dprS=1, dprG=1, dprL=1;
+    function resizeAll(){
+      dprS = resizeCanvas(cStars);
+      dprG = resizeCanvas(cGrid);
+      dprL = resizeCanvas(cGlow);
+      drawGrid();
+      buildStars();
+    }
+    window.addEventListener("resize", resizeAll);
+
+    // Grid
+    function drawGrid(){
+      const ctx = cGrid.getContext("2d");
+      ctx.clearRect(0,0,cGrid.width,cGrid.height);
+      ctx.save();
+      ctx.scale(dprG, dprG);
+      const w = window.innerWidth, h = window.innerHeight;
+      const spacing = 46;
+
+      // subtle perspective-ish gradient
+      const grad = ctx.createLinearGradient(0,0,0,h);
+      grad.addColorStop(0, "rgba(34,211,238,.10)");
+      grad.addColorStop(1, "rgba(124,58,237,.05)");
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 1;
+
+      for(let x=0; x<=w; x+=spacing){
+        ctx.beginPath();
+        ctx.moveTo(x,0); ctx.lineTo(x,h);
+        ctx.stroke();
+      }
+      for(let y=0; y<=h; y+=spacing){
+        ctx.beginPath();
+        ctx.moveTo(0,y); ctx.lineTo(w,y);
+        ctx.stroke();
+      }
+
+      // diagonal scanlines
+      ctx.strokeStyle = "rgba(255,255,255,.04)";
+      for(let i=-h; i<w; i+=72){
+        ctx.beginPath();
+        ctx.moveTo(i,0);
+        ctx.lineTo(i+h,h);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    // Stars
+    let stars = [];
+    function buildStars(){
+      const w = window.innerWidth, h = window.innerHeight;
+      const count = Math.floor((w*h) / 14000);
+      stars = new Array(count).fill(0).map(() => ({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        r: Math.random()*1.2 + 0.2,
+        a: Math.random()*0.7 + 0.15,
+        v: (Math.random()*0.25 + 0.05) * (Math.random() < 0.5 ? 1 : -1)
+      }));
+    }
+
+    function drawStars(){
+      const ctx = cStars.getContext("2d");
+      ctx.clearRect(0,0,cStars.width,cStars.height);
+      ctx.save();
+      ctx.scale(dprS, dprS);
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      for(const s of stars){
+        ctx.globalAlpha = s.a;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // Glow follows cursor (nice sci-fi vibe)
+    let mx = window.innerWidth*0.6, my = window.innerHeight*0.3;
+    window.addEventListener("mousemove", (e) => { mx = e.clientX; my = e.clientY; }, {passive:true});
+
+    function drawGlow(){
+      const ctx = cGlow.getContext("2d");
+      ctx.clearRect(0,0,cGlow.width,cGlow.height);
+      ctx.save();
+      ctx.scale(dprL, dprL);
+      const g1 = ctx.createRadialGradient(mx, my, 0, mx, my, 240);
+      g1.addColorStop(0, "rgba(34,211,238,.15)");
+      g1.addColorStop(0.6, "rgba(124,58,237,.08)");
+      g1.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g1;
+      ctx.fillRect(0,0,window.innerWidth, window.innerHeight);
+      ctx.restore();
+    }
+
+    // Animation loop
+    function animate(){
+      // drift stars
+      const w = window.innerWidth, h = window.innerHeight;
+      for(const s of stars){
+        s.y += s.v;
+        if(s.y < -10) s.y = h + 10;
+        if(s.y > h + 10) s.y = -10;
+      }
+      drawStars();
+      drawGlow();
+      requestAnimationFrame(animate);
+    }
+
+    resizeAll();
+    drawStars();
+    animate();
+  </script>
 </body>
 </html>
