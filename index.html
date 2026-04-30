@@ -1,18 +1,923 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-CN">
 <head>
-    <!-- 页面编码，避免乱码 -->
-    <meta charset="UTF-8">
-    <!-- 适配手机端，可选但更规范 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 页面标题，随便写即可 -->
-    <title>喵喵喵</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>喵~</title>
+  <meta name="description" content="小蓝的个人站：项目、笔记、联系（仅邮箱）。" />
+  <meta name="theme-color" content="#0a0611" />
+
+  <style>
+    :root{
+      --bg0:#070510;
+      --bg1:#0b0720;
+      --panel:rgba(255,255,255,.07);
+      --panel2:rgba(255,255,255,.10);
+      --stroke:rgba(255,255,255,.14);
+
+      --text:rgba(255,255,255,.88);
+      --muted:rgba(255,255,255,.60);
+      --hint:rgba(255,255,255,.45);
+
+      --pink:#ff62c6;
+      --lilac:#a78bfa;
+      --cyan:#22d3ee;
+      --mint:#34d399;
+
+      --shadow: 0 18px 70px rgba(0,0,0,.55);
+      --r: 18px;
+
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box }
+    html,body{ height:100% }
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 18% 12%, rgba(255,98,198,.18), transparent 58%),
+        radial-gradient(1000px 800px at 85% 0%, rgba(34,211,238,.14), transparent 60%),
+        radial-gradient(1100px 900px at 60% 115%, rgba(167,139,250,.14), transparent 58%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+      cursor: crosshair;
+    }
+
+    /* ===== Ambient Layers ===== */
+    .layer{ position:fixed; inset:0; pointer-events:none; z-index:-3; }
+    #dots{ z-index:-4; opacity:.42; }
+    #scan{ z-index:-2; opacity:.45; mix-blend-mode:screen; }
+    #glow{ z-index:-1; opacity:.90; mix-blend-mode:screen; }
+
+    /* ===== Top nav ===== */
+    header{
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: blur(16px);
+      background: linear-gradient(180deg, rgba(7,5,16,.78), rgba(7,5,16,.38));
+      border-bottom:1px solid rgba(255,255,255,.10);
+    }
+    .nav{
+      max-width:1100px; margin:0 auto;
+      padding: 14px 18px;
+      display:flex; gap:14px; align-items:center; justify-content:space-between;
+    }
+    .brand{
+      display:flex; gap:12px; align-items:center;
+      text-decoration:none; color:var(--text);
+      min-width: 220px;
+    }
+    .avatar{
+      width:38px; height:38px; border-radius:14px;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,98,198,.90), transparent 55%),
+        radial-gradient(circle at 75% 75%, rgba(34,211,238,.80), transparent 60%),
+        rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.16);
+      box-shadow: 0 0 38px rgba(255,98,198,.14);
+      position:relative; overflow:hidden;
+    }
+    .avatar:after{
+      content:"";
+      position:absolute; inset:-50%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+      transform: rotate(25deg) translateX(-40%);
+      animation: shine 3.6s linear infinite;
+    }
+    @keyframes shine{
+      0%{ transform: rotate(25deg) translateX(-55%); }
+      100%{ transform: rotate(25deg) translateX(55%); }
+    }
+    .brand .t{ display:flex; flex-direction:column; line-height:1.1 }
+    .brand .name{ font-weight:800; letter-spacing:.4px }
+    .brand .tag{
+      font-family:var(--mono);
+      font-size:12px;
+      color:rgba(255,255,255,.60);
+    }
+
+    .links{ display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end }
+    .chip{
+      text-decoration:none;
+      color:rgba(255,255,255,.68);
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      padding: 9px 12px;
+      border-radius:999px;
+      font-size:14px;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease, color .15s ease;
+      user-select:none;
+    }
+    .chip:hover{
+      transform: translateY(-1px);
+      color:rgba(255,255,255,.92);
+      border-color: rgba(255,98,198,.35);
+      background: rgba(255,98,198,.06);
+    }
+    .chip.primary{
+      color:rgba(255,255,255,.92);
+      border-color: rgba(34,211,238,.45);
+      background: linear-gradient(90deg, rgba(255,98,198,.12), rgba(34,211,238,.10));
+    }
+
+    .container{ max-width:1100px; margin:0 auto; padding: 0 18px 84px; }
+
+    /* ===== Cards & UI ===== */
+    .card{
+      border-radius: var(--r);
+      border: 1px solid rgba(255,255,255,.12);
+      background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+      box-shadow: var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+    .card:before{
+      content:"";
+      position:absolute; inset:-2px;
+      background:
+        radial-gradient(900px 260px at 12% 0%, rgba(255,98,198,.18), transparent 55%),
+        radial-gradient(900px 280px at 86% 10%, rgba(34,211,238,.14), transparent 60%),
+        radial-gradient(900px 260px at 60% 110%, rgba(167,139,250,.12), transparent 60%);
+      opacity:.70;
+      pointer-events:none;
+    }
+
+    /* ===== Hero ===== */
+    .hero{
+      padding: 52px 0 20px;
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 16px;
+      align-items:stretch;
+    }
+    @media (max-width: 980px){
+      .hero{ grid-template-columns:1fr; padding-top:36px; }
+      .brand{ min-width:auto; }
+    }
+
+    .hero-left{ padding: 24px 24px 18px; }
+    .kicker{
+      display:flex; align-items:center; gap:10px;
+      font-family:var(--mono);
+      font-size:12px;
+      letter-spacing:.7px;
+      text-transform: uppercase;
+      color: rgba(34,211,238,.85);
+    }
+    .heart{
+      width:12px; height:12px; transform: rotate(45deg);
+      background: rgba(255,98,198,.92);
+      box-shadow: 0 0 24px rgba(255,98,198,.55);
+      border-radius:3px;
+      position:relative;
+    }
+    .heart:before, .heart:after{
+      content:"";
+      position:absolute; width:12px; height:12px; background:inherit;
+      border-radius:50%;
+    }
+    .heart:before{ left:-6px; top:0; }
+    .heart:after{ top:-6px; left:0; }
+
+    h1{
+      margin: 14px 0 10px;
+      font-size: 44px;
+      line-height:1.05;
+      letter-spacing:.2px;
+    }
+    @media (max-width: 480px){ h1{ font-size: 36px; } }
+
+    .glitch{
+      position:relative;
+      display:inline-block;
+      text-shadow: 0 0 18px rgba(255,98,198,.18);
+    }
+    .glitch:before, .glitch:after{
+      content: attr(data-text);
+      position:absolute; left:0; top:0;
+      opacity:.65;
+      clip-path: inset(0 0 0 0);
+      pointer-events:none;
+    }
+    .glitch:before{ transform: translate(1px,0); color: rgba(34,211,238,.70); }
+    .glitch:after { transform: translate(-1px,0); color: rgba(255,98,198,.70); }
+
+    .subtitle{
+      margin:0;
+      color:var(--muted);
+      font-size:16px;
+      line-height:1.75;
+      max-width: 68ch;
+    }
+    .mono{ font-family:var(--mono); color: rgba(255,255,255,.78); }
+    .cta{
+      display:flex; gap:12px; flex-wrap:wrap;
+      margin-top: 18px; align-items:center;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding: 11px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      text-decoration:none;
+      font-size:14px;
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+      user-select:none;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      border-color: rgba(255,98,198,.38);
+      background: rgba(255,98,198,.06);
+    }
+    .btn.primary{
+      border-color: rgba(34,211,238,.45);
+      background: linear-gradient(90deg, rgba(255,98,198,.14), rgba(34,211,238,.12));
+    }
+    .btn small{ color: var(--muted); font-family:var(--mono); font-size:12px; }
+
+    /* ===== Terminal widget ===== */
+    .hero-right{ padding: 16px; display:flex; flex-direction:column; gap: 12px; }
+
+    .term{
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.26);
+      overflow:hidden;
+      position:relative;
+    }
+    .termbar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding: 10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      font-family:var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.74);
+    }
+    .dots{
+      display:flex; gap:6px; align-items:center;
+    }
+    .d{ width:10px; height:10px; border-radius:99px; opacity:.9; }
+    .d.p{ background: rgba(255,98,198,.9); box-shadow: 0 0 12px rgba(255,98,198,.4); }
+    .d.c{ background: rgba(34,211,238,.9); box-shadow: 0 0 12px rgba(34,211,238,.4); }
+    .d.l{ background: rgba(167,139,250,.9); box-shadow: 0 0 12px rgba(167,139,250,.35); }
+
+    .termbody{
+      padding: 12px 12px 14px;
+      font-family:var(--mono);
+      font-size: 12px;
+      color: rgba(255,255,255,.78);
+      line-height:1.7;
+      position:relative;
+      min-height: 128px;
+    }
+    .prompt{ color: rgba(34,211,238,.85); }
+    .ok{ color: rgba(52,211,153,.85); }
+    .warn{ color: rgba(255,98,198,.85); }
+    .cursor{
+      display:inline-block; width:8px; height:14px;
+      background: rgba(255,255,255,.72);
+      margin-left: 2px;
+      animation: blink 1s step-end infinite;
+      vertical-align:-2px;
+      border-radius:2px;
+    }
+    @keyframes blink{ 50%{ opacity:0; } }
+
+    .badgeRow{
+      display:grid; grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 980px){ .badgeRow{ grid-template-columns: 1fr; } }
+
+    .mini{
+      padding: 14px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .mini h3{
+      margin:0 0 6px;
+      font-family:var(--mono);
+      font-size: 12px;
+      letter-spacing:.35px;
+      color: rgba(255,255,255,.78);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .pill{
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      color: rgba(255,98,198,.92);
+      background: rgba(255,98,198,.08);
+    }
+    .mini p{
+      margin:0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.65;
+    }
+
+    /* ===== Sections ===== */
+    section.block{ margin-top: 16px; padding: 18px; }
+    .head{
+      display:flex; justify-content:space-between; align-items:flex-end;
+      gap:12px; flex-wrap:wrap; margin-bottom: 14px;
+    }
+    .head h2{ margin:0; font-size:18px; letter-spacing:.3px; }
+    .head .desc{ margin:0; color: var(--hint); font-family:var(--mono); font-size: 12px; }
+
+    .grid3{
+      display:grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 980px){ .grid3{ grid-template-columns: 1fr; } }
+
+    .item{
+      padding: 14px;
+      border-radius: 16px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      position:relative; overflow:hidden;
+      min-height: 120px;
+    }
+    .item:before{
+      content:"";
+      position:absolute; inset:-45%;
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255,98,198,.16), transparent 55%),
+        radial-gradient(circle at 70% 60%, rgba(34,211,238,.10), transparent 60%);
+      opacity:.70;
+      pointer-events:none;
+    }
+    .top{
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+      position:relative;
+    }
+    .item h3{
+      margin:0;
+      font-size: 15px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      font-family:var(--mono);
+      font-size: 11px;
+      color: var(--hint);
+      border: 1px solid rgba(255,255,255,.10);
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.03);
+      white-space:nowrap;
+    }
+    .item p{
+      position:relative;
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.75;
+    }
+    .item .links{
+      position:relative;
+      margin-top: 12px;
+      display:flex; gap: 10px; flex-wrap:wrap;
+    }
+    .a{
+      color: rgba(34,211,238,.92);
+      text-decoration:none;
+      font-family:var(--mono);
+      font-size: 12px;
+      border-bottom: 1px dashed rgba(34,211,238,.35);
+      padding-bottom: 1px;
+    }
+    .a:hover{ color: rgba(255,255,255,.92); border-bottom-color: rgba(255,255,255,.35); }
+
+    /* ===== Contact ===== */
+    .contact{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 980px){ .contact{ grid-template-columns:1fr; } }
+
+    label{
+      font-family:var(--mono);
+      font-size: 12px;
+      color: var(--hint);
+    }
+    input, textarea{
+      width:100%;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(0,0,0,.24);
+      color: var(--text);
+      outline:none;
+      font-size:14px;
+    }
+    textarea{ min-height: 118px; resize: vertical; }
+    input:focus, textarea:focus{
+      border-color: rgba(255,98,198,.45);
+      box-shadow: 0 0 0 3px rgba(255,98,198,.10);
+    }
+    .note{
+      margin-top: 10px;
+      font-family:var(--mono);
+      font-size: 12px;
+      color: var(--hint);
+      line-height:1.6;
+    }
+
+    footer{
+      margin-top: 16px;
+      padding: 18px;
+      color: var(--hint);
+      font-family: var(--mono);
+      font-size: 12px;
+      text-align:center;
+    }
+
+    /* ===== Cute cursor hearts ===== */
+    .spark{
+      position:fixed;
+      width:10px; height:10px;
+      transform: rotate(45deg);
+      background: rgba(255,98,198,.95);
+      border-radius:2px;
+      pointer-events:none;
+      z-index: 9999;
+      filter: drop-shadow(0 0 10px rgba(255,98,198,.35));
+      animation: pop .75s ease-out forwards;
+    }
+    .spark:before, .spark:after{
+      content:"";
+      position:absolute;
+      width:10px; height:10px; background: inherit;
+      border-radius:50%;
+    }
+    .spark:before{ left:-5px; top:0; }
+    .spark:after{ top:-5px; left:0; }
+
+    @keyframes pop{
+      0%{ opacity:1; transform: translate(0,0) rotate(45deg) scale(1); }
+      100%{ opacity:0; transform: translate(var(--dx), var(--dy)) rotate(45deg) scale(.2); }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce){
+      .avatar:after{ animation:none; }
+      .spark{ display:none; }
+      .cursor{ animation:none; }
+    }
+  </style>
 </head>
+
 <body>
-    <!-- 核心内容，简单写一句话就行 -->
-    <h1 style="text-align: center; margin-top: 50px;">小蓝的个人网站</h1>
-    <!--
-    <p style="text-align: center;">用于微博开发者身份认证</p>
-    -->
+  <!-- Ambient canvases -->
+  <canvas class="layer" id="dots" aria-hidden="true"></canvas>
+  <canvas class="layer" id="scan" aria-hidden="true"></canvas>
+  <canvas class="layer" id="glow" aria-hidden="true"></canvas>
+
+  <header>
+    <div class="nav">
+      <a class="brand" href="#top">
+        <div class="avatar" aria-hidden="true"></div>
+        <div class="t">
+          <div class="name">小蓝</div>
+          <div class="tag">1@xiaolan.xyz</div>
+        </div>
+      </a>
+      <nav class="links" aria-label="站点导航">
+        <a class="chip" href="#about">关于</a>
+        <a class="chip" href="#projects">项目</a>
+        <a class="chip" href="#notes">笔记</a>
+        <a class="chip primary" href="#contact">联系</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container" id="top">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="card hero-left">
+        <div class="kicker"><span class="heart" aria-hidden="true"></span> PRETTY / HACKY / VERIFIABLE</div>
+        <h1>
+          <span class="glitch" data-text="小蓝的个人站">小蓝的个人站</span><br/>
+          <span class="mono" id="typed">把想法写成可以跑的东西</span>
+        </h1>
+        <p class="subtitle">
+          这里记录我的项目、学习路线和实验日志。外壳是粉紫霓虹，内核是工程与证据：能复现、可解释、可迭代。
+        </p>
+
+        <div class="cta">
+          <a class="btn primary" href="#projects"><span>进入项目仓库</span><small>→</small></a>
+          <a class="btn" href="#notes"><span>打开日志</span><small>↗</small></a>
+          <a class="btn" href="#contact"><span>给我发信</span><small>✶</small></a>
+        </div>
+      </div>
+
+      <aside class="card hero-right" aria-label="终端面板">
+        <div class="term">
+          <div class="termbar">
+            <div class="dots" aria-hidden="true">
+              <span class="d p"></span><span class="d c"></span><span class="d l"></span>
+            </div>
+            <div>terminal · kawaii-shell</div>
+          </div>
+          <div class="termbody" id="termBody">
+            <div><span class="prompt">小蓝@node</span>:<span class="mono">~</span>$ whoami</div>
+            <div class="ok">→ builder / learner / security-ish</div>
+            <div style="height:8px"></div>
+            <div><span class="prompt">小蓝@node</span>:<span class="mono">~</span>$ status --now</div>
+            <div class="ok">→ writing code in neon fog ✦</div>
+            <div class="warn">→ preference: proof & reproducibility</div>
+            <div style="height:8px"></div>
+            <div><span class="prompt">小蓝@node</span>:<span class="mono">~</span>$ ping future</div>
+            <div class="ok">→ reply: keep going.</div>
+            <div style="height:8px"></div>
+            <div><span class="prompt">小蓝@node</span>:<span class="mono">~</span>$ <span class="cursor" aria-hidden="true"></span></div>
+          </div>
+        </div>
+
+        <div class="badgeRow">
+          <div class="mini">
+            <h3>状态 <span class="pill" id="pill">ONLINE</span></h3>
+            <p>方向：网安 × Web × NLP（中文情感分析）</p>
+          </div>
+          <div class="mini">
+            <h3>原则 <span class="pill" style="color:rgba(34,211,238,.92); background:rgba(34,211,238,.08)">EVIDENCE</span></h3>
+            <p>宁可慢一点，也不做“自信胡说”的产出。</p>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ABOUT -->
+    <section class="card block" id="about">
+      <div class="head">
+        <h2>关于</h2>
+        <p class="desc">identity / method / vibe</p>
+      </div>
+      <div class="grid3">
+        <div class="item">
+          <div class="top"><h3>我在做什么</h3><span class="meta">NOW</span></div>
+          <p>做可展示的项目：采集 → 处理 → 分析 → 可视化 → 部署。把学习变成作品，把作品变成能力。</p>
+        </div>
+        <div class="item">
+          <div class="top"><h3>我怎么做</h3><span class="meta">HOW</span></div>
+          <p>小步快跑：假设 → 最小实验 → 记录 → 复盘。用数据和复现对抗幻觉与焦虑。</p>
+        </div>
+        <div class="item">
+          <div class="top"><h3>我想去哪里</h3><span class="meta">NEXT</span></div>
+          <p>方向是安全与工程并行：更懂系统、更懂攻击面、更能构建可靠的东西。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="card block" id="projects">
+      <div class="head">
+        <h2>项目</h2>
+        <p class="desc">artifacts / demos / docs</p>
+      </div>
+      <div class="grid3">
+        <article class="item">
+          <div class="top"><h3>微博情感分析 · 霓虹仪表盘</h3><span class="meta">WEB · NLP</span></div>
+          <p>合规获取公开数据 → 清洗 → 情感判定（API/微调模型）→ 可视化。适合作品集主项目。</p>
+          <div class="links">
+            <a class="a" href="#" onclick="return placeholder(event)">Demo ↗</a>
+            <a class="a" href="#" onclick="return placeholder(event)">GitHub ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <div class="top"><h3>安全学习实验室 · 靶场笔记</h3><span class="meta">SEC · LAB</span></div>
+          <p>搭环境、做复现、写报告：把“看懂”升级为“能复现 + 能解释 + 能迁移”。</p>
+          <div class="links">
+            <a class="a" href="#" onclick="return placeholder(event)">索引 ↗</a>
+            <a class="a" href="#" onclick="return placeholder(event)">工具链 ↗</a>
+          </div>
+        </article>
+
+        <article class="item">
+          <div class="top"><h3>个人效率系统 · 反焦虑模块</h3><span class="meta">TOOLS</span></div>
+          <p>任务排序 / 学习节奏 / 复盘模板：把抽象压力拆成可执行的下一步。</p>
+          <div class="links">
+            <a class="a" href="#" onclick="return placeholder(event)">模板 ↗</a>
+            <a class="a" href="#" onclick="return placeholder(event)">说明 ↗</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- NOTES -->
+    <section class="card block" id="notes">
+      <div class="head">
+        <h2>笔记</h2>
+        <p class="desc">logs / how-to / proofs</p>
+      </div>
+      <div class="grid3">
+        <div class="item">
+          <div class="top"><h3>从 0 到 1：做一个能上线的 Web 项目</h3><span class="meta">DRAFT</span></div>
+          <p>需求拆分、接口选择、数据流、部署与作品集表达：把“学过”变成“做过”。</p>
+          <div class="links"><a class="a" href="#" onclick="return placeholder(event)">阅读 ↗</a></div>
+        </div>
+        <div class="item">
+          <div class="top"><h3>安全入门：先建威胁模型，再学工具</h3><span class="meta">DRAFT</span></div>
+          <p>用攻击面/防御面搭地图。工具只是刀，地图决定你会不会迷路。</p>
+          <div class="links"><a class="a" href="#" onclick="return placeholder(event)">阅读 ↗</a></div>
+        </div>
+        <div class="item">
+          <div class="top"><h3>时间焦虑：把进展做成可测量的输出</h3><span class="meta">NOTE</span></div>
+          <p>输入、输出、反馈周期。焦虑不是敌人，它只是缺少仪表盘。</p>
+          <div class="links"><a class="a" href="#" onclick="return placeholder(event)">阅读 ↗</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section class="card block" id="contact">
+      <div class="head">
+        <h2>联系</h2>
+        <p class="desc">email only</p>
+      </div>
+
+      <div class="contact">
+        <div class="item">
+          <div class="top"><h3>邮箱</h3><span class="meta">EMAIL</span></div>
+          <p>
+            直接发我邮件：<br/>
+            <a class="a" href="mailto:1096767290@qq.com">1096767290@qq.com ↗</a>
+          </p>
+          <div class="note">
+            友情提示：写清楚「你是谁 / 你想做什么 / 截止时间 / 约束条件」，我会更快进入状态。
+          </div>
+        </div>
+
+        <form class="item" onsubmit="return mailDraft(event)">
+          <div class="top"><h3>生成邮件草稿</h3><span class="meta">LOCAL</span></div>
+
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <label for="who">你的称呼</label>
+            <input id="who" name="who" placeholder="比如：某某同学" autocomplete="name" />
+          </div>
+
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+            <label for="msg">内容</label>
+            <textarea id="msg" name="msg" placeholder="你想聊什么？希望我做什么？有没有截止时间/限制条件？"></textarea>
+          </div>
+
+          <div class="cta" style="margin-top:12px;">
+            <button class="btn primary" type="submit">打开邮箱草稿</button>
+            <button class="btn" type="button" onclick="copyEmail()">复制邮箱</button>
+          </div>
+
+          <div class="note" id="note">
+            这是纯静态站：不会发送网络请求，只会生成 mailto 草稿（离线也能用）。
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <footer class="card">
+      <div style="padding: 14px 16px;">
+        <div>© <span id="year"></span> 小蓝 · cute outside, rigorous inside.</div>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    const EMAIL = "1096767290@qq.com";
+
+    // Year
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Placeholder links
+    function placeholder(e){
+      e.preventDefault();
+      toast("这是占位链接：把 href=\"#\" 换成你的真实地址。");
+      return false;
+    }
+
+    // Toast
+    const toastEl = document.createElement("div");
+    toastEl.style.cssText = `
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      padding: 10px 12px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.40);
+      backdrop-filter: blur(14px);
+      color: rgba(255,255,255,.9);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 12px;
+      opacity: 0; pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+      z-index: 999;
+      max-width: min(520px, calc(100vw - 36px));
+      text-align:center;
+    `;
+    document.body.appendChild(toastEl);
+    let toastTimer = null;
+    function toast(t){
+      toastEl.textContent = t;
+      toastEl.style.opacity = "1";
+      toastEl.style.transform = "translateX(-50%) translateY(-2px)";
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toastEl.style.opacity = "0";
+        toastEl.style.transform = "translateX(-50%) translateY(0px)";
+      }, 1600);
+    }
+
+    // Email helpers
+    function copyEmail(){
+      navigator.clipboard?.writeText(EMAIL).then(
+        () => toast("邮箱已复制 ✦"),
+        () => toast("复制失败：请手动复制邮箱")
+      );
+    }
+
+    function mailDraft(e){
+      e.preventDefault();
+      const who = (document.getElementById("who").value || "你好").trim();
+      const msg = (document.getElementById("msg").value || "").trim();
+      const subject = encodeURIComponent("联系小蓝｜来自个人网站");
+      const body = encodeURIComponent(
+`${who}，
+
+${msg || "（在这里写下你想说的内容）"}
+
+——
+来自：小蓝的个人网站`
+      );
+      window.location.href = `mailto:${EMAIL}?subject=${subject}&body=${body}`;
+      document.getElementById("note").textContent = "已打开 mailto 草稿：如果没有弹出邮箱客户端，检查浏览器/系统的默认邮件设置。";
+      return false;
+    }
+
+    // Cute heart cursor sparks
+    const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!reduced){
+      window.addEventListener("pointermove", (e) => {
+        if(Math.random() > 0.35) return;
+        const s = document.createElement("div");
+        s.className = "spark";
+        const dx = (Math.random()*2-1) * 26;
+        const dy = - (Math.random()*24 + 10);
+        s.style.left = (e.clientX - 5) + "px";
+        s.style.top  = (e.clientY - 5) + "px";
+        s.style.setProperty("--dx", dx + "px");
+        s.style.setProperty("--dy", dy + "px");
+        document.body.appendChild(s);
+        setTimeout(() => s.remove(), 800);
+      }, {passive:true});
+    }
+
+    // Ambient canvases: dots / scan / glow
+    const cDots = document.getElementById("dots");
+    const cScan = document.getElementById("scan");
+    const cGlow = document.getElementById("glow");
+
+    function resizeCanvas(c){
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      c.width = Math.floor(window.innerWidth * dpr);
+      c.height = Math.floor(window.innerHeight * dpr);
+      c.style.width = window.innerWidth + "px";
+      c.style.height = window.innerHeight + "px";
+      return dpr;
+    }
+
+    let dprD=1, dprS=1, dprG=1;
+    let dots = [];
+    let mx = innerWidth*0.6, my = innerHeight*0.35;
+    window.addEventListener("pointermove", (e)=>{ mx=e.clientX; my=e.clientY; }, {passive:true});
+
+    function buildDots(){
+      const w = innerWidth, h = innerHeight;
+      const count = Math.floor((w*h)/22000);
+      dots = new Array(count).fill(0).map(()=>({
+        x: Math.random()*w,
+        y: Math.random()*h,
+        r: Math.random()*1.25 + 0.25,
+        a: Math.random()*0.55 + 0.15,
+        v: (Math.random()*0.25 + 0.05) * (Math.random()<0.5?1:-1)
+      }));
+    }
+
+    function drawDots(){
+      const ctx = cDots.getContext("2d");
+      ctx.clearRect(0,0,cDots.width,cDots.height);
+      ctx.save();
+      ctx.scale(dprD,dprD);
+      ctx.fillStyle = "rgba(255,255,255,.85)";
+      for(const p of dots){
+        ctx.globalAlpha = p.a;
+        ctx.beginPath();
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawScan(t){
+      const ctx = cScan.getContext("2d");
+      ctx.clearRect(0,0,cScan.width,cScan.height);
+      ctx.save();
+      ctx.scale(dprS,dprS);
+
+      const w = innerWidth, h = innerHeight;
+      // scanline band
+      const y = (t*0.06) % h;
+      const grad = ctx.createLinearGradient(0,y-60,0,y+60);
+      grad.addColorStop(0, "rgba(255,98,198,0)");
+      grad.addColorStop(0.5, "rgba(255,98,198,.10)");
+      grad.addColorStop(1, "rgba(255,98,198,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, y-80, w, 160);
+
+      // faint horizontal lines
+      ctx.globalAlpha = 0.22;
+      ctx.strokeStyle = "rgba(255,255,255,.06)";
+      ctx.lineWidth = 1;
+      for(let i=0;i<h;i+=44){
+        ctx.beginPath();
+        ctx.moveTo(0,i);
+        ctx.lineTo(w,i);
+        ctx.stroke();
+      }
+
+      ctx.restore();
+    }
+
+    function drawGlow(){
+      const ctx = cGlow.getContext("2d");
+      ctx.clearRect(0,0,cGlow.width,cGlow.height);
+      ctx.save();
+      ctx.scale(dprG,dprG);
+      const g = ctx.createRadialGradient(mx,my,0,mx,my,260);
+      g.addColorStop(0, "rgba(34,211,238,.14)");
+      g.addColorStop(0.55, "rgba(167,139,250,.09)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,innerWidth,innerHeight);
+      ctx.restore();
+    }
+
+    function resizeAll(){
+      dprD = resizeCanvas(cDots);
+      dprS = resizeCanvas(cScan);
+      dprG = resizeCanvas(cGlow);
+      buildDots();
+      drawDots();
+    }
+    window.addEventListener("resize", resizeAll);
+
+    // Typed line in hero
+    const typed = document.getElementById("typed");
+    const phrases = [
+      "把想法写成可以跑的东西",
+      "粉色霓虹里保持清醒",
+      "用复现对抗幻觉",
+      "在复杂系统里找真相"
+    ];
+    let pi=0, ci=0, del=false;
+    function typeTick(){
+      if(reduced) return;
+      const s = phrases[pi];
+      if(!del){
+        ci++;
+        typed.textContent = s.slice(0,ci);
+        if(ci>=s.length){ del=true; setTimeout(typeTick, 900); return; }
+      }else{
+        ci--;
+        typed.textContent = s.slice(0,ci);
+        if(ci<=0){ del=false; pi=(pi+1)%phrases.length; }
+      }
+      setTimeout(typeTick, del?28:52);
+    }
+    setTimeout(typeTick, 420);
+
+    // Animation loop
+    function animate(t){
+      // drift dots
+      for(const p of dots){
+        p.y += p.v;
+        if(p.y<-10) p.y = innerHeight+10;
+        if(p.y>innerHeight+10) p.y = -10;
+      }
+      drawDots();
+      drawScan(t);
+      drawGlow();
+      requestAnimationFrame(animate);
+    }
+
+    resizeAll();
+    requestAnimationFrame(animate);
+  </script>
 </body>
 </html>
